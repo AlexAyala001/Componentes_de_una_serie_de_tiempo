@@ -1,0 +1,389 @@
+---
+title: "Práctica No. 1"
+author: "Equipo 1"
+date: "`r Sys.Date()`"
+output: 
+    rmdformats::downcute:
+      highlight: "kate"
+      lightbox: TRUE
+      self_contained: TRUE
+      code_folding: show
+      gallery: TRUE
+      fig_width: 10
+      fig_height: 4
+      df_print: kable
+      default_style: "dark"
+      toc_float:
+        collapsed: TRUE
+        smooth_scroll: TRUE
+---
+
+```{r knitr_init, echo=FALSE, cache=FALSE}
+library(knitr)
+library(rmdformats)
+## Global options
+options(max.print = "75")
+opts_chunk$set(echo = TRUE,
+	             cache = FALSE,
+               prompt = FALSE,
+               tidy = FALSE,
+               comment = NA,
+               message = FALSE,
+               warning = FALSE)
+opts_knit$set(width = 75)
+```
+
+```{r, echo=FALSE,message=F,warning=F}
+library(fpp2)
+library(readr)
+library(tidyverse)
+```
+
+# Componentes de una serie de tiempo {.tabset .tabset-fade .tabset-pills}
+
+## Aleatorio
+
+-  **Componente aleatorio**: *La serie fluctua de manera aleatoria alrededor de un valor constante.*
+![](https://financetrain.sgp1.cdn.digitaloceanspaces.com/white-noise-1.png)
+
+## Tendencia
+
+-   **Componente de Tendencia**: *Comportamiento de la serie a largo plazo que representa el crecimiento o decrecimiento de la serie de tiempo, no necesariamente lineal.*
+
+![](https://bookdown.org/content/2274/_main_files/figure-html/unnamed-chunk-101-1.png)
+
+## Cíclico
+
+-  **Componente cíclico**: *Oscilaciones o fluctuaciones cíclicas alrededor de la tendencia.*
+
+![](https://finanzaszone.com/wp-content/uploads/2017/11/Total-de-empleo-en-el-sector-de-la-construcci%C3%B3n-Serie-desestacionalizada.png)
+
+## Estacional
+
+-   **Componente estacional**: *Patrones  de comportamiento subanuales que se repiten cada año.*
+
+![](https://otexts.com/fpp2/fpp_files/figure-html/a10-1.png)
+
+# Ejercicios {.tabset .tabset-fade .tabset-pills}
+
+## Caso 1 Precios
+
+Se importan los datos
+
+```{r}
+ej1 <- read_csv("ibmadcloseprice.csv")
+```
+
+Se crea un objeto de tipo `ts`.
+
+```{r}
+IBM <- ts(ej1$ibm,frequency =252,start=c(2018,1)) 
+```
+
+### 1. Grafica de la serie de tiempo.
+
+Se crea la grafica de la serie de tiempo mediante la función `autoplot()`, con la fución `ggAcf()` se grafica el correlograma y con la función `ggtsdislay()` se generan las dos gráficas anteriores. (paquetes `forecast` y `ggplot2`). **ésta nos proporciona información general de la serie de tiempo**.Por ejemplo, componentes de la serie (componente horizontal, tendencia o estacioanlidad), si se trata de una serie estacionaria, presencia de outlers, tendencia amortiguada, etc.
+
+```{r}
+autoplot(IBM) + geom_smooth()
+```
+
+> Se tiene una serie diaria; Se observa tendencia no lineal; no se observa un patrón o componente estacional y eso se comprueba en el correlograma.
+
+```{r}
+ggAcf(IBM)
+```
+
+> El Correlograma de la serie de tiempo nos muestra la relación lineal que tiene la serie con su pasado remoto, de esta manera podemos decir que la serie de tiempo no  presenta una correlación serial. 
+
+```{r}
+ggtsdisplay(IBM)
+```
+
+> En esta grafica se resume lo mostrado en las graficas anteriores
+
+Para estudiar la dinámica de la relación lineal en el correlogramas podemos usar graficas de rezagos en la serie mediante la función `gglagplot()` o `lag.plot()`
+
+```{r}
+gglagplot(IBM, do.lines = FALSE)
+```
+
+> No se observa una relación lineal entre los diferentes rezagos y los precios al cierre de IBM.
+
+### 2. ¿La serie de tiempo es estacionaria?
+
+La serie no presenta media y varianza constate. Toda serie que presente el componente de tendencia es una serie no estacionaria.
+
+## Caso 1 Rend
+
+Se importan los datos
+
+```{r}
+ej1_1 <- read_csv("ibmadcloseprice.csv")
+```
+
+Se crea un objeto de tipo `ts`.
+
+```{r}
+RTN <- ts(ej1_1$rtn,frequency = 252,start=c(2018,1)) 
+```
+
+### 1. Grafica de la serie de tiempo.
+
+Se crea la grafica de la serie de tiempo mediante la función `autoplot()`, con la fución `ggAcf()` se grafica el correlograma y con la función `ggtsdislay()` se generan las dos gráficas anteriores. (paquetes `forecast` y `ggplot2`). **ésta nos proporciona información general de la serie de tiempo**.Por ejemplo, componentes de la serie (componente horizontal, tendencia o estacioanlidad), si se trata de una serie estacionaria, presencia de outlers, tendencia amortiguada, etc.
+
+```{r}
+autoplot(RTN) + geom_smooth()
+```
+
+> Se tiene una serie diaria; no se observa tendencia; se observan valores atípicos; se observa componente horizontal; no se observa un patrón o componente estacional y eso se comprueba en el correlograma.
+
+```{r}
+ggAcf(RTN)
+```
+
+> El Correlograma de la serie de tiempo nos muestra la relación lineal que tiene la serie con su pasado remoto, de esta manera podemos decir que la serie de tiempo presenta componente aleatorio (fluctuaciones aletorias) ,es decir, no presenta una correlación serial. 
+
+```{r}
+ggtsdisplay(RTN)
+```
+
+> En esta grafica se resume lo mostrado en las graficas anteriores
+
+Para estudiar la dinámica de la relación lineal en el correlogramas podemos usar graficas de rezagos en la serie mediante la función `gglagplot()` o `lag.plot()`
+
+```{r}
+gglagplot(RTN, do.lines = FALSE)
+```
+
+> No se observa una relación lineal entre los diferentes rezagos y los rendimientos.
+
+### 2. ¿La serie de tiempo es estacionaria?
+
+La serie de tiempo sí es estacionaria, presenta media que fluctua al rededor el 0 y varianza constante.
+
+
+## Caso 2
+
+Se importan los datos
+
+```{r}
+ej2 <- read_csv("mxinpc.csv")
+```
+
+Se crea un objeto de tipo `ts`.
+
+```{r}
+  INPC <- ts(ej2$y,frequency =12, start= c(2000,1)) 
+```
+
+### 1. Grafica de la serie de tiempo.
+
+Se crea la grafica de la serie de tiempo mediante la función `autoplot()`, con la función `ggAcf()` se grafica el correlograma y con la función `ggtsdislay()` se generan las dos gráficas anteriores. (paquetes `forecast` y `ggplot2`). **ésta nos proporciona información general de la serie de tiempo**.Por ejemplo, componentes de la serie (componente horizontal, tendencia o estacioanlidad), si se trata de una serie estacionaria, presencia de outliers, tendencia amortiguada, etc.
+
+```{r}
+autoplot(INPC)+ geom_smooth()
+```
+
+> Se tiene una serie mensual (periodo estacional $s=12$); se observa tendencia; no se observan valores atípicos; no se observa componente horizontal; no se observa un patrón estacional.
+
+```{r}
+ggAcf(INPC, lag.max = 48)
+```
+
+> El Correlograma de la serie de tiempo nos muestra la relación lineal que tiene  la serie con su pasado remoto, de esta manera podemos decir que la serie de tiempo presenta correlación serial. Además se puede ver que la correlación va disminuyendo gradualmente conforme el número de rezagos aumenta.
+
+```{r}
+ggtsdisplay(INPC)
+```
+
+> En esta grafica se resume lo mostrado en las graficas anteriores
+
+Para estudiar la dinámica de la relación lineal en el correlogramas podemos usar graficas de rezagos en la serie mediante la función `gglagplot()` o `lag.plot()`
+
+```{r}
+gglagplot(INPC, do.lines = FALSE)
+```
+
+> En el grafico de rezagos se observa una relación lineal entre los diferentes rezagos y el INPC aunque esta disminuye gradualmente.
+
+### 2. ¿La serie de tiempo es estacionaria?
+
+La serie no presenta media y varianza constate. Toda serie que presente el componente de tendencia es una serie no estacionaria.
+
+## Caso 3
+
+Se importan los datos
+
+```{r}
+ej3 <- read_csv("cookies.csv")
+```
+
+Se crea un objeto de tipo `ts`.
+
+```{r}
+  Demanda <- ts(ej3$y,frequency =12, start= c(2000,1)) 
+```
+
+### 1. Grafica de la serie de tiempo.
+
+Se crea la grafica de la serie de tiempo mediante la función `autoplot()`, con la función `ggAcf()` se grafica el correlograma y con la función `ggtsdislay()` se generan las dos gráficas anteriores. (paquetes `forecast` y `ggplot2`). **ésta nos proporciona información general de la serie de tiempo**.Por ejemplo, componentes de la serie (componente horizontal, tendencia o estacioanlidad), si se trata de una serie estacionaria, presencia de outliers, tendencia amortiguada, etc.
+
+```{r}
+autoplot(Demanda)+ geom_smooth()
+```
+
+> Se tiene una serie mensual (periodo estacional $s=12$); Se observa tendencia; no se observan valores atípicos; no se observa componente horizontal; se observa un patrón estacional.
+
+```{r}
+ggAcf(Demanda, lag.max = 48)
+```
+
+> El Correlograma de la serie de tiempo nos muestra la relación lineal que tiene la serie con su pasado remoto, de esta manera podemos decir que la serie de tiempo presenta correlación serial. Además se puede ver que la correlación disminuye debido al componente de tendencia y aumenta en los multiplos del periodo estacional, donde esa correlación va disminuyendo gradualmente conforme el número de rezagos aumenta.
+
+```{r}
+ggtsdisplay(Demanda)
+```
+
+> En esta grafica se resume lo mostrado en las graficas anteriores
+
+Para estudiar la dinámica de la relación lineal en el correlogramas podemos usar graficas de rezagos en la serie mediante la función `gglagplot()` o `lag.plot()`
+
+```{r}
+gglagplot(Demanda, do.lines = FALSE, lag= 24)
+```
+
+> En el grafico de rezagos observa una relación lineal entre los diferentes rezagos multiplos del periodo estacional y la demanda de galletas, por lo tanto la serie de tiempo es estacional, aunque esta correlación disminuye gradualmente.
+
+### 2. ¿La serie de tiempo es estacionaria?
+
+La serie no presenta media y varianza constate. Toda serie que presente el componente de tendencia es una serie no estacionaria.
+
+### 3. Si hay presencia de estacionalidad, describa el efecto estacional en la serie de tiempo.
+
+Cuando la serie tiene un patron estacional, se pueden usar las funciones `ggseasonplot()` y`ggsubseriesplot()` para obtener más información de tal componente. Con la primera función los datos se representan en función de las "estaciones" individuales en las que se observaron los datos. Con la segunda función la representación de los datos son análogos a los diagramas de caja, los datos son recopidados para cada estación.
+
+```{r}
+ggseasonplot(Demanda)
+```
+
+> En este grafico se puede ver como es el efecto estacional dividido en casos, además se observa que a finales de cada año la demanda de galletas aumenta, alcanzando su punto máximo en noviembre de cada año.
+
+```{r}
+ggsubseriesplot(Demanda)
+```
+
+> En esta gráfica se puede observar un poco más claro el comportamiento estacional de la serie, en donde la linea azul es el valor promedio de la demanda de galletas para cada periodo estacional, en las cuales se pude notar que su valor aumenta para los ultimos meses del año. La demanda de galletas alcanza su mayor nivel en mes de noviembre para todos los años.
+
+## Caso 4
+
+Se importan los datos
+
+```{r}
+ej4 <- read_csv("SalesReport.csv")
+```
+
+Se crea un objeto de tipo `ts`.
+
+```{r}
+  ventas <- ts(ej4$y,frequency = 12, start= c(2000,1)) 
+```
+
+### 1. Grafica de la serie de tiempo.
+
+Se crea la grafica de la serie de tiempo mediante la función `autoplot()`, con la función `ggAcf()` se grafica el correlograma y con la función `ggtsdislay()` se generan las dos gráficas anteriores. (paquetes `forecast` y `ggplot2`). **ésta nos proporciona información general de la serie de tiempo**.Por ejemplo, componentes de la serie (componente horizontal, tendencia o estacioanlidad), si se trata de una serie estacionaria, presencia de outliers, tendencia amortiguada, etc.
+
+```{r}
+autoplot(ventas)+ geom_smooth()
+```
+
+> Se tiene una serie mensual (periodo estacional $s=12$); se observa tendencia; no se observan valores atípicos; no se observa componente horizontal; se observa un patrón estacional y eso se comprueba en el correlograma.
+
+```{r}
+ggAcf(ventas, lag.max = 48)
+```
+
+> El Correlograma de la serie de tiempo nos muestra la relación lineal que tiene la serie con su pasado remoto, de esta manera podemos decir que la serie de tiempo presenta correlación serial. Además se puede ver que la correlación disminuye por el componente de tendecia y aumenta en los multiplos del periodo estacional, donde esa correlación va disminuyendo gradualmente conforme el número de rezagos aumenta.
+
+```{r}
+ggtsdisplay(ventas)
+```
+
+> En esta grafica se resume lo mostrado en las graficas anteriores.
+
+Para estudiar la dinámica de la relación lineal en el correlogramas podemos usar graficas de rezagos en la serie mediante la función `gglagplot()` o `lag.plot()`
+
+```{r}
+gglagplot(ventas, do.lines = FALSE, lag= 24)
+```
+
+> Se observa una relación lineal entre los diferentes rezagos multiplos del periodo estacional y las ventas mensusales de la compañía X, por lo tanto la serie de tiempo es estacional, aunque esta correlación disminuye gradualmente.
+
+### 2. ¿La serie de tiempo es estacionaria?
+
+La serie no presenta media y varianza constate. Toda serie que presente el componente de tendencia es una serie no estacionaria.
+
+### 3. Si hay presencia de estacionalidad, describa el efecto estacional en la serie de tiempo.
+
+Cuando la serie tiene un patron estacional, se pueden usar las funciones `ggseasonplot()` y`ggsubseriesplot()` para obtener más información de tal componente. Con la primera función los datos se representan en función de las "estaciones" individuales en las que se observaron los datos. Con la segunda función la representación de los datos son análogos a los diagramas de caja, los datos son recopidados para cada estación.
+
+```{r}
+ggseasonplot(ventas)
+```
+
+> En este grafico se puede ver como es el efecto estacional dividido en casos, además se observa que a finales de cada año las ventas de la compañía X aumentan, alcanzando su punto máximo en noviembre de cada año.
+
+
+```{r}
+ggsubseriesplot(ventas)
+```
+
+> En esta gráfica se puede observar un poco más claro el comportamiento estacional de la serie, en donde la linea azul es el valor promedio de las ventas de la compañía X para cada periodo estacional, en las cuales se pude notar que su valor aumenta para los últimos meses del año. Las ventas de la compañía X alcanzan su mayor nivel en mes de noviembre para todos los años.
+
+## Caso 5
+
+Se importan los datos
+
+```{r}
+ej5 <- read_csv("mxPIBTrimB13.csv")
+```
+
+Se crea un objeto de tipo `ts`.
+
+```{r}
+  PIB <- ts(ej5$y,frequency = 4, start= 1980) 
+```
+
+### 1. Grafica de la serie de tiempo.
+
+Se crea la grafica de la serie de tiempo mediante la función `autoplot()`, con la función `ggAcf()` se grafica el correlograma y con la función `ggtsdislay()` se generan las dos gráficas anteriores. (paquetes `forecast` y `ggplot2`). **ésta nos proporciona información general de la serie de tiempo**.Por ejemplo, componentes de la serie (componente horizontal, tendencia o estacioanlidad), si se trata de una serie estacionaria, presencia de outliers, tendencia amortiguada, etc.
+
+```{r}
+autoplot(PIB)+ geom_smooth()
+```
+
+> Se tiene una serie trimestral (periodo estacional $s=4$); se observa tendencia; no se observa componente horizontal; no se observan valores atípicos; no se observa un patrón estacional y eso se comprueba en el correlograma.
+
+```{r}
+ggAcf(PIB)
+```
+
+> El Correlograma de la serie de tiempo nos muestra la relación lineal que tiene la serie  con su pasado remoto, de esta manera podemos decir que la serie de tiempo presenta correlación serial. Además se puede ver que la correlación disminuye por el componente de tendecia, donde esa correlación va disminuyendo gradualmente conforme el número de rezagos aumenta.
+
+```{r}
+ggtsdisplay(PIB)
+```
+
+> En esta grafica se resume lo mostrado en las graficas anteriores
+
+Para estudiar la dinámica de la relación lineal en el correlogramas podemos usar graficas de rezagos en la serie mediante la función `gglagplot()` o `lag.plot()`
+
+```{r}
+gglagplot(PIB, do.lines = FALSE, lag= 16)
+```
+
+> En el grafico de rezagos se observa una relación lineal entre los diferentes rezagos y el PIB aunque esta disminuye gradualmente.
+
+### 2. ¿La serie de tiempo es estacionaria?
+
+La serie no presenta media y varianza constate. Toda serie que presente el componente de tendencia es una serie no estacionaria.
